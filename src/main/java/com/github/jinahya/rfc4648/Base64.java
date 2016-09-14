@@ -13,16 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.github.jinahya.rfc4648;
-
 
 /**
  *
  * @author Jin Kwon &lt;jinahya_at_gmail.com&gt;
  */
 public class Base64 extends Base {
-
 
     public Base64() {
         super(new byte[]{
@@ -33,9 +30,6 @@ public class Base64 extends Base {
             'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
             'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
             'w', 'x', 'y', 'z', '0', '1', '2', '3',
-            '4', '5', '6', '7', '8', '9', '+', '/'},
-              true);
+            '4', '5', '6', '7', '8', '9', '+', '/'}, true);
     }
-
 }
-

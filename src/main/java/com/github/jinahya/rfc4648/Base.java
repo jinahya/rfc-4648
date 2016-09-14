@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.github.jinahya.rfc4648;
-
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,7 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
-
+import static java.lang.Math.log;
 
 /**
  *
@@ -35,50 +33,47 @@ import java.io.Writer;
  */
 public abstract class Base {
 
+    /**
+     * the default pad character.
+     */
+    private static final char PAD = '=';
 
     /**
-     * Default pad character.
+     * the number of bits consisting an octet.
      */
-    protected static final char PAD = '=';
-
+    private static final int OS = 8;
 
     /**
-     * MAGIC NUMBER: OCTET SIZE.
+     * the number of ASCII characters.
      */
-    private static final int OCTET_SIZE = 8;
-
+    private static final int AS = 128;
 
     /**
-     * MAGIC NUMBER: ASCII SIZE.
+     * the smallest visible ASCII number.
      */
-    private static final int ASCII_SIZE = 128;
-
+    private static final int SVA = 0x21; // 33; // '!'
 
     /**
-     * MAGIC NUMBER: SMALLEST VISIBLE ASCII.
+     * the length of numbers array.
      */
-    private static final int SMALLEST_VISIBLE_ASCII = 33;
-
+    private static final int NL = AS - SVA + 1;
 
     /**
      * Returns the Least Common Multiple value for given two operands.
      *
      * @param a the first operand
      * @param b the second operand
-     *
      * @return calculated least common multiple
      */
     private static int lcm(final int a, final int b) {
         return ((a * b) / gcd(a, b));
     }
 
-
     /**
      * Returns the Greatest Common Divisor for given two operands.
      *
      * @param a the first operand
      * @param b the second operand
-     *
      * @return calculated great common devisor
      */
     private static int gcd(final int a, final int b) {
@@ -89,33 +84,56 @@ public abstract class Base {
         }
     }
 
-
+    /**
+     * Returns the number of required bits per character.
+     *
+     * @param alphabets the number of alphabets
+     * @return the number of required bits per character.
+     */
     static int bpc(final int alphabets) {
-        return (int) (Math.log(alphabets) / Math.log(2.0d));
+        return (int) (log(alphabets) / log(2.0d));
     }
 
-
+    /**
+     * Returns the required number of bytes per word.
+     *
+     * @param alphabets the number of alphabet.
+     * @return the required number of bytes per word.
+     */
     static int bpw(final int alphabets) {
-        return lcm(OCTET_SIZE, bpc(alphabets)) / OCTET_SIZE;
+        return lcm(OS, bpc(alphabets)) / OS;
     }
 
-
+    /**
+     * Returns the required number of characters per word.
+     *
+     * @param alphabets the number of alphabet.
+     * @return the required number of characters per word
+     */
     static int cpw(final int alphabets) {
-        return (bpw(alphabets) * OCTET_SIZE) / bpc(alphabets);
+        return (bpw(alphabets) * OS) / bpc(alphabets);
     }
 
-
+//    static byte[] numbers(final byte[] characters) {
+//        final byte[] numbers = new byte[256];
+//        for (int i = 0; i < numbers.length; i++) {
+//            numbers[i] = -1;
+//        }
+//        for (byte i = 0; i < characters.length; i++) {
+//            numbers[characters[i]] = i;
+//        }
+//        return numbers;
+//    }
     static byte[] numbers(final byte[] characters) {
-        final byte[] numbers = new byte[256];
+        final byte[] numbers = new byte[NL];
         for (int i = 0; i < numbers.length; i++) {
             numbers[i] = -1;
         }
         for (byte i = 0; i < characters.length; i++) {
-            numbers[characters[i]] = i;
+            numbers[characters[i] - SVA] = i;
         }
         return numbers;
     }
-
 
     /**
      * Create a new instance.
@@ -139,28 +157,35 @@ public abstract class Base {
 
         characters = alphabet;
 
-        numbers = new byte[ASCII_SIZE - SMALLEST_VISIBLE_ASCII + 1];
+        numbers = new byte[AS - SVA + 1];
         for (int i = 0; i < numbers.length; i++) {
             numbers[i] = -1;
         }
         for (byte i = 0; i < characters.length; i++) {
-            numbers[characters[i] - SMALLEST_VISIBLE_ASCII] = i;
+            numbers[characters[i] - SVA] = i;
         }
 
         this.pads = padding;
 
         bitsPerChar = (int) (Math.log(characters.length) / Math.log(2.0d));
-        bytesPerWord = lcm(OCTET_SIZE, bitsPerChar) / OCTET_SIZE;
-        charsPerWord = bytesPerWord * OCTET_SIZE / bitsPerChar;
+        bytesPerWord = lcm(OS, bitsPerChar) / OS;
+        charsPerWord = bytesPerWord * OS / bitsPerChar;
     }
 
-
+    /**
+     * Creates a new instance.
+     *
+     * @param characters the alphabet
+     * @param numbers numbers against for the alphabet
+     * @param pads a flag for padding
+     * @param bitsPerChar number of bits per character
+     * @param bytesPerWord number of bytes for a word
+     * @param charsPerWord number of characters for a word
+     */
     Base(final byte[] characters, final byte[] numbers, final boolean pads,
          final int bitsPerChar, final int bytesPerWord,
          final int charsPerWord) {
-
         super();
-
         this.characters = characters;
         this.numbers = numbers;
         this.pads = pads;
@@ -169,24 +194,19 @@ public abstract class Base {
         this.charsPerWord = charsPerWord;
     }
 
-
     /**
+     * Encodes given input.
      *
-     * @param input
-     *
-     * @return
-     *
-     * @throws IOException
+     * @param input the input to encode
+     * @return encoded output
+     * @throws IOException if an I/O error occurs.
      */
     public char[] encode(final byte[] input) throws IOException {
-
         if (input == null) {
-            throw new IllegalArgumentException("null input");
+            throw new NullPointerException("null input");
         }
-
         return encode(new ByteArrayInputStream(input));
     }
-
 
     /**
      *
@@ -210,7 +230,6 @@ public abstract class Base {
         return output.toCharArray();
     }
 
-
     /**
      *
      * @param input binary input
@@ -219,7 +238,7 @@ public abstract class Base {
      * @throws IOException if an I/O error occurs
      */
     public final void encode(final InputStream input, final Writer output)
-        throws IOException {
+            throws IOException {
 
         if (input == null) {
             throw new IllegalArgumentException("null input");
@@ -232,7 +251,6 @@ public abstract class Base {
         encode(new BitInput(input), output);
     }
 
-
     /**
      *
      * @param input binary input
@@ -241,23 +259,17 @@ public abstract class Base {
      * @throws IOException if an I/O error occurs
      */
     private void encode(final BitInput input, final Writer output)
-        throws IOException {
-
+            throws IOException {
         if (input == null) {
             throw new IllegalArgumentException("null input");
         }
-
         if (output == null) {
             throw new IllegalArgumentException("null output");
         }
-
         outer:
         while (true) {
-
             for (int i = 0; i < charsPerWord; i++) {
-
-                int available = OCTET_SIZE - ((bitsPerChar * i) % OCTET_SIZE);
-
+                int available = OS - ((bitsPerChar * i) % OS);
                 if (available >= bitsPerChar) {
                     try {
                         int unsigned = input.readUnsignedInt(bitsPerChar);
@@ -268,7 +280,7 @@ public abstract class Base {
                 } else { // need next octet
                     int required = bitsPerChar - available;
                     int unsigned
-                        = (input.readUnsignedInt(available) << required);
+                            = (input.readUnsignedInt(available) << required);
                     try {
                         unsigned |= input.readUnsignedInt(required);
                         output.write(characters[unsigned]);
@@ -286,7 +298,6 @@ public abstract class Base {
         }
     }
 
-
     /**
      *
      * @param input
@@ -303,7 +314,6 @@ public abstract class Base {
 
         return decode(new CharArrayReader(input));
     }
-
 
     /**
      *
@@ -327,7 +337,6 @@ public abstract class Base {
         return output.toByteArray();
     }
 
-
     /**
      *
      * @param input character input
@@ -336,7 +345,7 @@ public abstract class Base {
      * @throws IOException if I/O error occurs
      */
     public final void decode(final Reader input, final OutputStream output)
-        throws IOException {
+            throws IOException {
 
         if (input == null) {
             throw new IllegalArgumentException("null input");
@@ -349,7 +358,6 @@ public abstract class Base {
         decode(input, new BitOutput(output));
     }
 
-
     /**
      *
      * @param input character input
@@ -358,7 +366,7 @@ public abstract class Base {
      * @throws IOException if I/O error occurs
      */
     private void decode(final Reader input, final BitOutput output)
-        throws IOException {
+            throws IOException {
 
         outer:
         while (true) {
@@ -375,7 +383,7 @@ public abstract class Base {
                         break outer;
                     }
 
-                    if (((i * bitsPerChar) % OCTET_SIZE) >= bitsPerChar) {
+                    if (((i * bitsPerChar) % OS) >= bitsPerChar) {
                         throw new EOFException("not finished properly");
                     }
 
@@ -395,7 +403,7 @@ public abstract class Base {
                         throw new IOException("bad padding");
                     }
 
-                    if (((i * bitsPerChar) % OCTET_SIZE) >= bitsPerChar) {
+                    if (((i * bitsPerChar) % OS) >= bitsPerChar) {
                         throw new IOException("bad padding");
                     }
 
@@ -413,7 +421,7 @@ public abstract class Base {
 
                 } else {
 
-                    int value = numbers[c - SMALLEST_VISIBLE_ASCII];
+                    int value = numbers[c - SVA];
                     if (value == -1) {
                         throw new IOException("bad character: " + (char) c);
                     }
@@ -423,41 +431,36 @@ public abstract class Base {
         }
     }
 
-
+    // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     /**
      * Characters for encoding.
      */
     private final byte[] characters;
-
 
     /**
      * Characters for decoding.
      */
     private final byte[] numbers;
 
-
     /**
      * flag for padding.
      */
     private final boolean pads;
-
 
     /**
      * number of bits per character.
      */
     private final int bitsPerChar;
 
-
     /**
      * number of bytes per word.
      */
     private final int bytesPerWord;
 
-
     /**
      * number of characters per word.
      */
     private final int charsPerWord;
-
 }
-

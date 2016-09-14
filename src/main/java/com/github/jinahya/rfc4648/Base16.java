@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.github.jinahya.rfc4648;
-
 
 /**
  *
@@ -23,12 +21,23 @@ package com.github.jinahya.rfc4648;
  */
 public class Base16 extends Base {
 
+    private static final byte[] CHARACTERS = {
+        '0', '1', '2', '3', '4', '5', '6', '7',
+        '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+    };
+
+    private static final byte[] NUMBERS = numbers(CHARACTERS);
+
+    private static final int BPC = bpc(CHARACTERS.length);
+
+    private static final int BPW = bpw(CHARACTERS.length);
+
+    private static final int CPW = cpw(CHARACTERS.length);
 
     public Base16() {
-        super(new byte[]{
-            '0', '1', '2', '3', '4', '5', '6', '7',
-            '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'}, false);
+//        super(new byte[]{
+//            '0', '1', '2', '3', '4', '5', '6', '7',
+//            '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'}, false);
+        super(CHARACTERS, NUMBERS, true, BPC, BPW, CPW);
     }
-
 }
-

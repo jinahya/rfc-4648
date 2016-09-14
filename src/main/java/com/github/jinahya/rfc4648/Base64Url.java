@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.github.jinahya.rfc4648;
-
 
 /**
  *
@@ -23,9 +21,7 @@ package com.github.jinahya.rfc4648;
  */
 public class Base64Url extends Base {
 
-
     public Base64Url() {
-
         super(new byte[]{
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
             'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
@@ -36,6 +32,4 @@ public class Base64Url extends Base {
             'w', 'x', 'y', 'z', '0', '1', '2', '3',
             '4', '5', '6', '7', '8', '9', '-', '_'}, false);
     }
-
 }
-

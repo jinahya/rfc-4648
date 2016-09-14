@@ -13,16 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.github.jinahya.rfc4648;
-
 
 /**
  *
  * @author Jin Kwon &lt;jinahya_at_gmail.com&gt;
  */
 public class Base32 extends Base {
-
 
     public Base32() {
         super(new byte[]{
@@ -31,6 +28,4 @@ public class Base32 extends Base {
             'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
             'Y', 'Z', '2', '3', '4', '5', '6', '7'}, true);
     }
-
 }
-
